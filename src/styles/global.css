@@ -152,3 +152,7 @@ nav.pagination-nav {
 .pg-con select {
   margin-left: 10px;
 }
+.pagination-page a.disabled {
+  pointer-events: none;
+  color: #ccc;
+}
