@@ -1,6 +1,15 @@
 <template>
   <div class="dt-outer">
-    <data-table></data-table>
+    <data-table :isAsync="isAsync" 
+                :searchIsPagination="searchIsPagination"
+                :searchUrl="searchUrl"
+                :searchParam="searchParam"
+                :isPaginatin="isPaginatin"
+                :tableColumn="tableColumn" 
+                :tableData="tableData" 
+                :options="options">
+
+    </data-table>
   </div>
 </template>
 <script>
@@ -9,18 +18,44 @@
       name: 'TestDataTable',
       data () {
         return {
+        isAsync: true,
+        searchIsPagination: true,
+        searchUrl: 'http://localhost:8899/',
+        searchParam: {},
+        isPaginatin: true,
         //表格的头部部分数据
-        gridColumns: ['name', 'power'],
+        tableColumn: ["id", "name", "department", "no", "tel", "sex"],
         //表格的主体部分数据
-        gridData: [
-             { name: 'Chuck Norris', power: Infinity },
-             { name: 'Bruce Lee', power: 9000 },
-             { name: 'Jackie Chan', power: 7000 },
-             { name: 'Jet Li', power: 8000 }
+        tableData: [
+          {id: 1,name: "luozhluozhluozhluozhluozhluozhluozhluozhluozhluozhluozhluozhluozh",department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu",no: "001",tel: "123",sex: "0"},
+          {id: 2,name: "luozh",department: "caiwu",no: "001",tel: "123",sex: "0"},
+          {id: 3,name: "luozh",department: "caiwu",no: "001",tel: "123",sex: "0"},
+          {id: 4,name: "luozh",department: "caiwu",no: "001",tel: "123",sex: "0"},
+          {id: 5,name: "luozh",department: "caiwu",no: "001",tel: "123",sex: "0"},
+          {id: 6,name: "luozh",department: "caiwu",no: "001",tel: "123",sex: "0"},
+          {id: 7,name: "luozh",department: "caiwu",no: "001",tel: "123",sex: "0"},
+          {id: 8,name: "luozh",department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",no: "001",tel: "123",sex: "0"}
         ],
-        //input组件中v-model双向绑定的数据值
-        searchQuery : ''
+        options: [
+          {
+            colname: "sex",
+            colwidth: "100px",
+            specOper: function(val) {
+              return val == "0" ? "女" : "男";
+            }
+          },
+          {
+            colname: "name",
+            colwidth: "200px"
+          },
+          {colname: "tel",
+            colwidth: "500px"},
+          {colname: "no",
+            colwidth: "500px"}
+        ],
+
         }
+        
       },
       components: {
         DataTable: DataTable

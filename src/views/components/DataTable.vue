@@ -9,7 +9,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="data in lists" :key="data.id" id="data.id?data.id:''">
+            <tr v-for="data in lists" :key="data.id" :id="data.id?data.id:''">
                 <td ><input type="checkbox"
                       :checked="checkList.indexOf(data.id)>=0" 
                       @click="checkedOne(data.id)" />
@@ -80,7 +80,8 @@ export default {
       pageLen: 5, //显示条数
       pageTotal: 1, //总页数
       totalcount: 0,
-      colList: []
+      colList: [],
+      totalList: [] //表格总数据
     };
   },
   props: {
@@ -110,95 +111,14 @@ export default {
     tableColumn: {
       type: Array,
       default: function() {
-        return ["id", "name", "department", "no", "tel", "sex"];
+        return [];
       }
     },
     // 表格数据（数组）
     tableData: {
       type: Array,
       default: function() {
-        return [
-          {
-            id: 1,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 2,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "1"
-          },
-          {
-            id: 3,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 4,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "1"
-          },
-          {
-            id: 5,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 6,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 7,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 8,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 9,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          },
-          {
-            id: 10,
-            name: "luozh",
-            department: "caiwu",
-            no: "001",
-            tel: "123",
-            sex: "0"
-          }
-        ];
+        return [];
       }
     },
     //是否分页
@@ -228,22 +148,14 @@ export default {
       type: Function,
       default: function(ids, callback) {
         console.log("you will oper these ids:" + ids.toString());
+        callback();
       }
     },
     //栏位的特殊控制
     options: {
       type: Array,
       default: function() {
-        let obj = [
-          {
-            colname: "sex",
-            colwidth: "100px",
-            specOper: function(val) {
-              return val == "0" ? "女" : "男";
-            }
-          }
-        ];
-        return obj;
+        return [];
       }
     }
   },
@@ -253,17 +165,21 @@ export default {
   created: function() {
     let _this = this;
     if (!_this.isAsync && _this.tableData && _this.tableData.length > 0) {
-      _this.lists = _this.tableData.slice(
+      _this.totalList = _this.tableData;
+      _this.lists = _this.totalList.slice(
         0 + (_this.activeNum - 1) * _this.pageLen,
         _this.activeNum * _this.pageLen
       );
-      _this.totalcount = _this.tableData.length;
+      _this.totalcount = _this.totalList.length;
+      _this.pageTotal = Math.ceil(_this.totalcount / _this.pageLen);
       if (
         _this.initPageLen > 0 &&
         _this.pageLens.indexOf(_this.initPageLen) > -1
       ) {
         _this.pageLen = _this.initPageLen;
       }
+    } else {
+      this.getData();
     }
     var newArr = [];
     _this.tableColumn.map(function(value) {
@@ -271,7 +187,6 @@ export default {
       newobj.colname = value;
       _this.options.forEach(function(item, index) {
         if (value == item.colname) {
-          console.log(item.colname);
           newobj.colwidth = item.colwidth;
           newobj.specOper = item.specOper;
         }
@@ -279,7 +194,6 @@ export default {
       newArr.push(newobj);
     });
     _this.colList = newArr;
-    console.log(_this.colList.toString());
   },
   methods: {
     formatData(oper, val) {
@@ -308,10 +222,11 @@ export default {
       }
     },
     batchOperMethod() {
-      let cb = function() {
-        this.refresh();
+      var _this = this;
+      var cb = function() {
+        _this.refresh();
       };
-      this.batchOper(this.checkList, cb);
+      this.batchOper(_this.checkList, cb);
     },
     // 点击页码刷新数据
     onPageClick(index) {
@@ -342,83 +257,99 @@ export default {
         let len = this.pageLen,
           pageNum = this.activeNum - 1,
           newData = [];
-
         for (let i = pageNum * len; i < pageNum * len + len; i++) {
-          this.data[i] !== undefined ? newData.push(this.data[i]) : "";
+          this.totalList[i] !== undefined
+            ? newData.push(this.totalList[i])
+            : "";
         }
-        this.totalcount = this.data.length;
-        this.pageTotal = Math.ceil(this.data.length / this.pageLen);
+        this.totalcount = this.totalList.length;
+        this.pageTotal = Math.ceil(this.totalList.length / this.pageLen);
         this.lists = newData;
       } else {
-        this.searchParam.pageNum = this.activeNum;
-        this.searchParam.pageSize = this.pageLen;
-
-        /*this.$http({
-          url: this.searchUrl,
-          method: "POST",
-          params: this.searchParam,
-          emulateJSON: true
-        }).then(function(response) {
-          this.totalcount = response.data.totalCount;
-          this.lists = response.data.tableData;
-        },function(){
-
-        });*/
-        axios
-          .post(this.searchUrl, this.searchParam)
-          .then(response => {
-            this.totalcount = response.data.totalCount;
-            this.lists = response.data.tableData;
+        if(this.searchIsPagination && this.isPaginatin){
+          this.searchParam.pageNum = this.activeNum;
+          this.searchParam.pageSize = this.pageLen;
+        }
+        console.log("searchParam:"+JSON.stringify(this.searchParam));
+        var opts = {
+          method: "POST",   //请求方法
+          body: JSON.stringify(this.searchParam),   //请求体
+        }
+        fetch(this.searchUrl, opts)
+          .then(res => {
+            console.log(res);
+            try {
+              if (!res.ok) {
+                console.log("请求失败" + statusText);
+                return;
+              }
+              return res.json();
+            } catch (e) {
+              console.log("无法解析的返回值");
+            }
           })
-          .catch(error => {
-            console.log(error);
+          .then(data => {
+            console.log(data);
+            this.totalcount = data.totalCount;
+            //服务器不分页，前端需要分页
+            if (!this.searchIsPagination && this.isPaginatin) {
+              this.totalList = data.tableData;
+              this.pageTotal = Math.ceil(this.totalList.length / this.pageLen);
+              this.lists = this.totalList.slice(
+                0 + (this.activeNum - 1) * this.pageLen,
+                this.activeNum * this.pageLen
+              );
+            }else{
+              this.lists = data.tableData;
+              if(this.lists.length > this.pageLen){
+                this.lists = this.lists.slice(0,this.pageLen);
+              }
+            }
+          })
+          .catch(msg => {
+            console.log(msg);
           });
       }
     },
 
     // 刷新表格
     refresh() {
+      this.checkList = [];
       this.getData();
     }
   },
   events: {
-    // 分页组件传回的表格数据
-    /*data(data) {
-      this.tableList = data;
-      this.lists = this.tableList;
-    },*/
-
     // 刷新数据
     refresh() {
       this.refresh();
     }
   },
   watch: {
-    checkList() {
+    /*checkList() {
       var _this = this;
       _this.checked = false;
       _this.checkList.forEach(function(item, index) {
         if (_this.id == item) {
-          //_this.checked = true;
           return;
         }
       });
-    },
+    },*/
     // 监听显示数量
     pageLen(newVal, oldVal) {
-      console.log("pageLen newVal:" + newVal + ";oldVal:" + oldVal);
+      this.pageTotal = Math.ceil(this.totalcount / this.pageLen);
+      this.activeNum = 1;
+      this.checkList = [];
       this.refresh();
     },
 
     // 监测当前页变化
     activeNum(newVal, oldVal) {
-      console.log("activeNum newVal:" + newVal + ";oldVal:" + oldVal);
       this.refresh();
-    },
-
-    dataItem(newVal) {
-      console.log(newVal);
     }
   }
 };
 </script>
+<style>
+@import '../../styles/datatable.css';
+
+</style>
