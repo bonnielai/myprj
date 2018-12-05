@@ -156,3 +156,13 @@ nav.pagination-nav {
   pointer-events: none;
   color: #ccc;
 }
+.table-module {
+  width: 100%;
+  overflow-x: auto;
+}
+a.link-batch {
+  font-size: 16px;
+  color: #337ab7;
+  float: left;
+  display: block;
+}
