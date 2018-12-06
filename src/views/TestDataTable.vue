@@ -29,7 +29,7 @@ export default {
       searchUrl: "http://localhost:8899/",
       searchParam: {},
       //表格的头部部分数据
-      tableColumn: ["id", "name", "department", "no", "tel", "sex", "mark", "addr", "remark"],
+      tableColumn: [],
       //表格的主体部分数据
       tableData: [
         {

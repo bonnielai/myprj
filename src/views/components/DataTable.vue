@@ -1,7 +1,8 @@
 <template>
-  <div class="dt-container"  v-bind:style="{ width: tableStyle.width?tableStyle.width:'100%', height: tableStyle.height?tableStyle.height:'100%' }">
-    <div class="table-module">
-      <table class="dt-table">
+  <div  class="dt-container"  v-bind:style="{ width: tableStyle.width?tableStyle.width:'100%', height: tableStyle.height?tableStyle.height:'100%' }">
+    <div  class="table-module">
+      <div class="table-error" v-if="!colList || colList.length == 0">配置参数有误，表格初始化失败</div>
+      <table v-if="colList && colList.length > 0" class="dt-table">
         <thead>
             <tr>
                 <th v-if="isSelectMode"></th>
@@ -37,7 +38,7 @@
         </tfoot>
     </table>
   </div>
-  <div v-if="isPaginatin" class="pagination-outer">
+  <div v-if="colList && colList.length > 0 && isPaginatin" class="pagination-outer">
       <nav class="pagination-nav ">
       <div class="pg-con inline-flex">
         <div class="data-total">
@@ -72,7 +73,7 @@
 
 <script>
 export default {
-  name: 'dataTable',
+  name: "dataTable",
   data() {
     return {
       lists: [], // 表格原始数据
@@ -319,7 +320,10 @@ export default {
               );
             } else {
               this.lists = data.tableData;
-              this.totalcount = data.tableData&&data.totalcount<data.tableData.length?data.tableData.length:data.totalcount;
+              this.totalcount =
+                data.tableData && data.totalcount < data.tableData.length
+                  ? data.tableData.length
+                  : data.totalcount;
               //服务器分页但是服务器传回来的
               if (this.lists.length > this.pageLen) {
                 this.lists = this.lists.slice(0, this.pageLen);

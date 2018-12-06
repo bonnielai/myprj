@@ -34,10 +34,6 @@ table {
 .dt-table .check-col {
   width: 5px;
 }
-.dt-outer {
-  width: 80%;
-  margin: 0 auto;
-}
 .dt-table td {
   word-break: break-word;
 }
@@ -183,4 +179,11 @@ thead {
 }
 .dt-table tbody tr:hover{
   background: #f2f3f5!important;
+}
+.table-error {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  padding: 10px 0;
+  border: solid 1px #ddd;
 }
