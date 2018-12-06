@@ -72,7 +72,6 @@ export default {
   data() {
     return {
       lists: [], // 表格原始数据
-      //tableList: [], // 分页后的数据
       checkList: [],
       isCheckedAll: false,
       pages: [1],
@@ -301,6 +300,7 @@ export default {
               );
             }else{
               this.lists = data.tableData;
+              //服务器分页但是服务器传回来的
               if(this.lists.length > this.pageLen){
                 this.lists = this.lists.slice(0,this.pageLen);
               }
@@ -318,22 +318,7 @@ export default {
       this.getData();
     }
   },
-  events: {
-    // 刷新数据
-    refresh() {
-      this.refresh();
-    }
-  },
   watch: {
-    /*checkList() {
-      var _this = this;
-      _this.checked = false;
-      _this.checkList.forEach(function(item, index) {
-        if (_this.id == item) {
-          return;
-        }
-      });
-    },*/
     // 监听显示数量
     pageLen(newVal, oldVal) {
       this.pageTotal = Math.ceil(this.totalcount / this.pageLen);

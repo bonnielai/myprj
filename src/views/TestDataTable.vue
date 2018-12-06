@@ -19,7 +19,7 @@
       data () {
         return {
         isAsync: true,
-        searchIsPagination: true,
+        searchIsPagination: false,
         searchUrl: 'http://localhost:8899/',
         searchParam: {},
         isPaginatin: true,
@@ -52,7 +52,7 @@
             colwidth: "500px"},
           {colname: "no",
             colwidth: "500px"}
-        ],
+        ]
 
         }
         
