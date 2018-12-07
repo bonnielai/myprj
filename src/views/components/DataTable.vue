@@ -1,12 +1,12 @@
 <template>
-  <div  class="dt-container"  v-bind:style="{ width: tableStyle.width?tableStyle.width:'100%', height: tableStyle.height?tableStyle.height:'100%' }">
+  <div  class="dt-container" id="dtContainer"  v-bind:style="{ width: tableStyle.width?tableStyle.width:'100%', height: tableStyle.height?tableStyle.height:'100%' }">
     <div  class="table-module" id="tableModule">
       <div class="table-error" v-if="!colList || colList.length == 0">配置参数有误，表格初始化失败</div>
       <table v-if="colList && colList.length > 0" class="dt-table" >
         <thead>
             <tr>
                 <th v-if="isSelectMode"></th>
-                <th v-for="key in colList" v-text="key.colname" v-bind:style="{width:key.colwidth}"></th>
+                <th v-for="key in colList" v-text="key.alias" v-bind:style="{width:key.colwidth}"></th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +27,7 @@
           <tr>
             <td class="check-col">
               <input type="checkbox"
-                :checked="lists.length===checkList.length && checkList.length"
+                :checked="checkList.length && lists.length===checkList.length"
                 class="checkbox" 
                 @click="checkedAll"/>
             </td>
@@ -38,7 +38,7 @@
         </tfoot>
     </table>
   </div>
-  <div v-if="colList && colList.length > 0 && isPaginatin" class="pagination-outer">
+  <div v-if="colList && colList.length > 0 && isPagination" class="pagination-outer" id="pagination">
       <nav class="pagination-nav ">
       <div class="pg-con inline-flex">
         <div class="data-total">
@@ -76,20 +76,20 @@ export default {
   name: "dataTable",
   data() {
     return {
-      lists: [], // 表格原始数据
-      checkList: [],
-      isCheckedAll: false,
-      pages: [1],
-      pageLengths: [5, 10, 20],
-      activeNum: 1,
+      lists: [], // 表格展示数据
+      checkList: [],//选中的id数组
+      isCheckedAll: false,//是否全选
+      pageLengths: [5, 10, 20],//分页数组
+      activeNum: 1,//当前页
       pageLen: 5, //显示条数
       pageTotal: 1, //总页数
-      totalcount: 0,
-      colList: [],
-      totalList: [] //表格总数据
+      totalcount: 0,//总条数
+      colList: [],//栏位列数组
+      totalList: [] //表格总数据，存放需要由前端分页时的总数据
     };
   },
   props: {
+    //表格样式设置，width，height
     tableStyle: {
       type: Object,
       default: function() {
@@ -125,7 +125,7 @@ export default {
         return [];
       }
     },
-    // 表格数据（数组）
+    // 表格数据（数组），若是选择模式，则要求数据项中必须含有id项
     tableData: {
       type: Array,
       default: function() {
@@ -133,7 +133,7 @@ export default {
       }
     },
     //是否分页
-    isPaginatin: {
+    isPagination: {
       type: Boolean,
       default: true
     },
@@ -155,13 +155,14 @@ export default {
       default: false
     },
     //若支持选择模式，会出现批量操作按钮，触发此对象的operFun事件，传入批量选择的数据项id数组，和callback事件，用以刷新数据
+    //支持operName操作按钮文字显示和operFun批量操作自定义函数
     batchOper: {
       type: Object,
       default: function() {
         return {};
       }
     },
-    //栏位的特殊控制
+    //栏位的特殊控制，colname栏位项，colwidth列宽度，alias列展示别名，specOper列自定义处理函数
     options: {
       type: Array,
       default: function() {
@@ -169,20 +170,19 @@ export default {
       }
     }
   },
-  /*components: {
-    pagination
-  },*/
   created: function() {
     let _this = this;
     if (_this.pageLens && _this.pageLens.length > 0) {
       _this.pageLengths = _this.pageLens;
     }
+    //初始化时每页默认条数,若不在pageLengths数组中，则默认选中第一个
     if (
       _this.initPageLen > 0 &&
       _this.pageLengths.indexOf(_this.initPageLen) > -1
     ) {
       _this.pageLen = _this.initPageLen;
     }
+    //如果是传入数组模式，则将数组数据进行处理；否则请求接口获取数据
     if (!_this.isAsync && _this.tableData && _this.tableData.length > 0) {
       _this.totalList = _this.tableData;
       _this.lists = _this.totalList.slice(
@@ -194,30 +194,49 @@ export default {
     } else {
       this.getData();
     }
+    //列栏位特殊处理：别名、自定义宽度、自定义处理函数
     var newArr = [];
     _this.tableColumn.map(function(value) {
       var newobj = {};
       newobj.colname = value;
+      newobj.alias = value;
       _this.options.forEach(function(item, index) {
         if (value == item.colname) {
           newobj.colwidth = item.colwidth;
           newobj.specOper = item.specOper;
+          newobj.alias = item.alias ? item.alias : newobj.alias;
         }
       });
       newArr.push(newobj);
     });
     _this.colList = newArr;
   },
-  mounted: function(){
-    document.getElementById('tableModule').style.minHeight = document.getElementById('tableModule').clientHeight + "px"
+  mounted: function() {
+    //数据渲染完后对表格的高度进行控制处理
+    var tableModuleObj = document.getElementById("tableModule"),
+      dtContainerObj = document.getElementById("dtContainer"),
+      paginationObj = document.getElementById("pagination");
+    tableModuleObj.style.minHeight = tableModuleObj.clientHeight + "px";
+    if (this.tableStyle && this.tableStyle.height) {
+      if (
+        dtContainerObj.clientHeight <
+        tableModuleObj.clientHeight + paginationObj.clientHeight
+      ) {
+        var adjustHeight =
+          dtContainerObj.clientHeight - paginationObj.clientHeight;
+        if (adjustHeight < tableModuleObj.clientHeight) {
+          tableModuleObj.style.height = adjustHeight + "px";
+          tableModuleObj.style.minHeight = adjustHeight + "px";
+        }
+      }
+    }
   },
   methods: {
+    //格式化栏位数据，调用自定义处理函数
     formatData(oper, val) {
       return oper(val);
     },
-    refresh() {
-      this.page.refresh();
-    },
+    //选中某行数据
     checkedOne(id) {
       let index = this.checkList.indexOf(id);
       if (index > -1) {
@@ -226,6 +245,7 @@ export default {
         this.checkList.push(id);
       }
     },
+    //全选当页数据
     checkedAll(e) {
       this.isCheckedAll = e.target.checked;
       if (this.isCheckedAll) {
@@ -237,6 +257,7 @@ export default {
         this.checkList = [];
       }
     },
+    //批量处理方法，调用用户自定义批量处理函数，传入选中的id数组和刷新回调函数
     batchOperMethod() {
       var _this = this;
       if (_this.checkList && _this.checkList.length > 0) {
@@ -288,18 +309,16 @@ export default {
         this.pageTotal = Math.ceil(this.totalList.length / this.pageLen);
         this.lists = newData;
       } else {
-        if (this.searchIsPagination && this.isPaginatin) {
+        if (this.searchIsPagination && this.isPagination) {
           this.searchParam.pageNum = this.activeNum;
           this.searchParam.pageSize = this.pageLen;
         }
-        console.log("searchParam:" + JSON.stringify(this.searchParam));
         var opts = {
           method: "POST", //请求方法
           body: JSON.stringify(this.searchParam) //请求体
         };
         fetch(this.searchUrl, opts)
           .then(res => {
-            console.log(res);
             try {
               if (!res.ok) {
                 console.log("请求失败" + statusText);
@@ -311,25 +330,28 @@ export default {
             }
           })
           .then(data => {
-            console.log(data);
-            //服务器不分页，前端需要分页
-            if (!this.searchIsPagination && this.isPaginatin) {
-              this.totalList = data.tableData;
-              this.pageTotal = Math.ceil(this.totalList.length / this.pageLen);
-              this.totalcount = this.totalList.length;
-              this.lists = this.totalList.slice(
-                0 + (this.activeNum - 1) * this.pageLen,
-                this.activeNum * this.pageLen
-              );
-            } else {
-              this.lists = data.tableData;
-              this.totalcount =
-                data.tableData && data.totalcount < data.tableData.length
-                  ? data.tableData.length
-                  : data.totalcount;
-              //服务器分页但是服务器传回来的
-              if (this.lists.length > this.pageLen) {
-                this.lists = this.lists.slice(0, this.pageLen);
+            if (data && data.flag == "1") {
+              //服务器不分页，前端需要分页
+              if (!this.searchIsPagination && this.isPagination) {
+                this.totalList = data.tableData;
+                this.pageTotal = Math.ceil(
+                  this.totalList.length / this.pageLen
+                );
+                this.totalcount = this.totalList.length;
+                this.lists = this.totalList.slice(
+                  0 + (this.activeNum - 1) * this.pageLen,
+                  this.activeNum * this.pageLen
+                );
+              } else {
+                this.lists = data.tableData;
+                this.totalcount =
+                  data.tableData && data.totalcount < data.tableData.length
+                    ? data.tableData.length
+                    : data.totalcount;
+                //服务器分页但是服务器传回来的
+                if (this.lists.length > this.pageLen) {
+                  this.lists = this.lists.slice(0, this.pageLen);
+                }
               }
             }
           })
