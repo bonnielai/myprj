@@ -1,8 +1,8 @@
 <template>
   <div  class="dt-container"  v-bind:style="{ width: tableStyle.width?tableStyle.width:'100%', height: tableStyle.height?tableStyle.height:'100%' }">
-    <div  class="table-module">
+    <div  class="table-module" id="tableModule">
       <div class="table-error" v-if="!colList || colList.length == 0">配置参数有误，表格初始化失败</div>
-      <table v-if="colList && colList.length > 0" class="dt-table">
+      <table v-if="colList && colList.length > 0" class="dt-table" >
         <thead>
             <tr>
                 <th v-if="isSelectMode"></th>
@@ -207,6 +207,9 @@ export default {
       newArr.push(newobj);
     });
     _this.colList = newArr;
+  },
+  mounted: function(){
+    document.getElementById('tableModule').style.minHeight = document.getElementById('tableModule').clientHeight + "px"
   },
   methods: {
     formatData(oper, val) {

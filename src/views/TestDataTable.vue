@@ -24,12 +24,12 @@ export default {
   data() {
     return {
       tableStyle: {},
-      isAsync: true,
+      isAsync: false,
       searchIsPagination: false,
       searchUrl: "http://localhost:8899/",
       searchParam: {},
       //表格的头部部分数据
-      tableColumn: [],
+      tableColumn: ["id", "name", "department", "no", "tel", "sex", "mark", "addr", "remark"],
       //表格的主体部分数据
       tableData: [
         {
@@ -96,6 +96,46 @@ export default {
         },
         {
           id: 8,
+          name: "luozh",
+          department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",
+          no: "001",
+          tel: "123",
+          sex: "0"
+        },
+        {
+          id: 9,
+          name: "luozh",
+          department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",
+          no: "001",
+          tel: "123",
+          sex: "0"
+        },
+        {
+          id: 10,
+          name: "luozh",
+          department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",
+          no: "001",
+          tel: "123",
+          sex: "0"
+        },
+        {
+          id: 11,
+          name: "luozh",
+          department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",
+          no: "001",
+          tel: "123",
+          sex: "0"
+        },
+        {
+          id: 12,
+          name: "luozh",
+          department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",
+          no: "001",
+          tel: "123",
+          sex: "0"
+        },
+        {
+          id: 13,
           name: "luozh",
           department: "caiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwucaiwu ",
           no: "001",
